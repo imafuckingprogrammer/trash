@@ -76,32 +76,12 @@ export function BookCard({ book, onCurrentlyReadingToggle }: BookCardProps) {
           </div>
         )}
       </CardContent>
-      <CardFooter className="p-4 border-t space-y-2">
+      <CardFooter className="p-4 border-t">
         <Link href={`/books/${bookId}`} className="w-full">
           <Button variant="outline" className="w-full transition-colors duration-200">
             View Details
           </Button>
         </Link>
-        {onCurrentlyReadingToggle && !book.currentUserIsRead && (
-          <Button
-            variant={book.currentUserIsCurrentlyReading ? "default" : "outline"}
-            size="sm"
-            className="w-full"
-            onClick={handleCurrentlyReadingToggle}
-          >
-            {book.currentUserIsCurrentlyReading ? (
-              <>
-                <BookOpenCheck className="w-4 h-4 mr-2" />
-                Currently Reading
-              </>
-            ) : (
-              <>
-                <BookOpen className="w-4 h-4 mr-2" />
-                Start Reading
-              </>
-            )}
-          </Button>
-        )}
       </CardFooter>
     </Card>
   );

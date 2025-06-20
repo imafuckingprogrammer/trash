@@ -21,15 +21,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Comprehensive filters for book discovery
+// Comprehensive filters for book search
 const genres = [
-  "Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller", 
-  "Romance", "Horror", "Adventure", "Biography", "History", "Self-Help", 
-  "Business", "Philosophy", "Psychology", "Science", "Technology", "Art", 
-  "Travel", "Cooking", "Health", "Religion", "Poetry", "Drama", "Comedy",
-  "Young Adult", "Children's Books", "Comics", "Graphic Novels", "Reference"
+  "Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller", "Romance", "Horror",
+  "Non-Fiction", "History", "Biography", "Autobiography", "Self-Help", "Business",
+  "Psychology", "Philosophy", "Religion", "Science", "Technology", "Health",
+  "Travel", "Cooking", "Art", "Music", "Sports", "Politics", "Economics",
+  "Education", "Parenting", "True Crime", "Adventure", "Literary Fiction",
+  "Young Adult", "Children's Books", "Poetry", "Drama", "Essays", "Humor"
 ];
-const publicationYears = ["2024", "2023", "2022", "2021", "2020", "2015-2019", "2010-2014", "2000-2009", "1990-1999", "Before 1990"];
+
+const publicationYears = [
+  "2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015",
+  "2010s", "2000s", "1990s", "1980s", "1970s", "1960s", "1950s", "Older"
+];
+
+const ratingFilters = [
+  { value: "", label: "Any Rating" },
+  { value: "4", label: "4+ Stars" },
+  { value: "3", label: "3+ Stars" },
+  { value: "2", label: "2+ Stars" },
+  { value: "1", label: "1+ Stars" }
+];
+
 const sortOptions = [
   { value: "relevance", label: "Relevance" },
   { value: "newest", label: "Newest First" },
@@ -37,6 +51,7 @@ const sortOptions = [
   { value: "rating", label: "Highest Rated" },
   { value: "title", label: "Title A-Z" },
   { value: "author", label: "Author A-Z" },
+  { value: "popular", label: "Most Popular" }
 ];
 
 export default function DiscoverPage() {
@@ -64,6 +79,7 @@ export default function DiscoverPage() {
   // Book filter states
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedMinRating, setSelectedMinRating] = useState<string>("");
   const [selectedSortBy, setSelectedSortBy] = useState<string>("relevance");
 
   const handleBookSearch = async (e?: React.FormEvent<HTMLFormElement>, page: number = 1, loadMore: boolean = false) => {
@@ -78,8 +94,9 @@ export default function DiscoverPage() {
     }
 
     const filters = {
-      genres: selectedGenres.join(','),
+      genres: selectedGenres.length > 0 ? selectedGenres.join(',') : '',
       publicationYear: selectedYear,
+      minRating: selectedMinRating,
       sortBy: selectedSortBy,
     };
     // Remove empty filters
@@ -155,34 +172,9 @@ export default function DiscoverPage() {
   };
 
   const toggleGenre = (genre: string) => {
-    const newGenres = selectedGenres.includes(genre) 
-      ? selectedGenres.filter(g => g !== genre) 
-      : [...selectedGenres, genre];
-    setSelectedGenres(newGenres);
-    
-    // Trigger search with new filters
-    if (bookSearchQuery || newGenres.length > 0 || selectedYear || selectedSortBy !== "relevance") {
-      setTimeout(() => handleBookSearch(undefined, 1), 100);
-    }
-  };
-
-  const handleYearChange = (year: string) => {
-    const newYear = selectedYear === year ? "" : year;
-    setSelectedYear(newYear);
-    
-    // Trigger search with new filters
-    if (bookSearchQuery || selectedGenres.length > 0 || newYear || selectedSortBy !== "relevance") {
-      setTimeout(() => handleBookSearch(undefined, 1), 100);
-    }
-  };
-
-  const handleSortChange = (sortBy: string) => {
-    setSelectedSortBy(sortBy);
-    
-    // Trigger search with new filters
-    if (bookSearchQuery || selectedGenres.length > 0 || selectedYear || sortBy !== "relevance") {
-      setTimeout(() => handleBookSearch(undefined, 1), 100);
-    }
+    setSelectedGenres(prev => 
+      prev.includes(genre) ? prev.filter(g => g !== genre) : [...prev, genre]
+    );
   };
 
   const loadMoreBooks = () => {
@@ -294,14 +286,33 @@ export default function DiscoverPage() {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Publication Year</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={!selectedYear} onCheckedChange={() => handleYearChange("")}>Any Year</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={!selectedYear} onCheckedChange={() => setSelectedYear("")}>Any Year</DropdownMenuCheckboxItem>
                     {publicationYears.map(year => (
                       <DropdownMenuCheckboxItem
                         key={year}
                         checked={selectedYear === year}
-                        onCheckedChange={() => handleYearChange(year)}
+                        onCheckedChange={() => setSelectedYear(selectedYear === year ? "" : year)}
                       >
                         {year}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm"><Filter className="mr-2 h-4 w-4"/>Rating ({ratingFilters.find(r=>r.value === selectedMinRating)?.label || 'Any Rating'})</Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>Minimum Rating</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {ratingFilters.map(rating => (
+                      <DropdownMenuCheckboxItem
+                        key={rating.value}
+                        checked={selectedMinRating === rating.value}
+                        onCheckedChange={() => setSelectedMinRating(selectedMinRating === rating.value ? "" : rating.value)}
+                      >
+                        {rating.label}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </DropdownMenuContent>
@@ -318,17 +329,18 @@ export default function DiscoverPage() {
                       <DropdownMenuCheckboxItem
                         key={opt.value}
                         checked={selectedSortBy === opt.value}
-                        onCheckedChange={() => handleSortChange(opt.value)}
+                        onCheckedChange={() => setSelectedSortBy(opt.value)}
                       >
                         {opt.label}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {(selectedGenres.length > 0 || selectedYear || selectedSortBy !== "relevance") && (
+                {(selectedGenres.length > 0 || selectedYear || selectedMinRating || selectedSortBy !== "relevance") && (
                     <Button variant="ghost" size="sm" onClick={() => {
                         setSelectedGenres([]);
                         setSelectedYear("");
+                        setSelectedMinRating("");
                         setSelectedSortBy("relevance");
                         handleBookSearch(undefined, 1);
                     }}>Clear Filters</Button>
@@ -382,17 +394,17 @@ export default function DiscoverPage() {
                 {bookSearchResults.map((book) => (
                   <BookCard 
                     key={book.id || book.google_book_id || book.open_library_id} 
-                    book={book}
+                    book={book} 
                   />
                 ))}
               </div>
             )}
-            {!bookIsLoading && bookSearchResults.length === 0 && (bookSearchQuery || selectedGenres.length > 0 || selectedYear) && !bookError && (
+            {!bookIsLoading && bookSearchResults.length === 0 && (bookSearchQuery || selectedGenres.length > 0 || selectedYear || selectedMinRating) && !bookError && (
                <div className="text-center py-10 text-muted-foreground">
                 <p>No books found for your current search and filters. Try adjusting them.</p>
               </div>
             )}
-             {!bookIsLoading && bookSearchResults.length === 0 && !bookSearchQuery && selectedGenres.length === 0 && !selectedYear && !bookError && (
+             {!bookIsLoading && bookSearchResults.length === 0 && !bookSearchQuery && selectedGenres.length === 0 && !selectedYear && !selectedMinRating && !bookError && (
                <div className="text-center py-10 text-muted-foreground">
                 <p>Enter a search term or apply filters to find books.</p>
               </div>
