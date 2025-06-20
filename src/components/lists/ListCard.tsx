@@ -77,7 +77,7 @@ export function ListCard({ list }: ListCardProps) {
                     opacity,
                   }}
                 >
-                  {src ? (
+                {src ? (
                     <Image 
                       src={src} 
                       alt={`Book cover ${index + 1}`} 
@@ -85,7 +85,7 @@ export function ListCard({ list }: ListCardProps) {
                       className="object-cover rounded-lg"
                       sizes="96px"
                     />
-                  ) : (
+                ) : (
                     <div className="w-full h-full bg-muted/60 flex items-center justify-center rounded-lg">
                       <BookOpenCheck className="w-10 h-10 text-muted-foreground/50" />
                     </div>
@@ -94,7 +94,7 @@ export function ListCard({ list }: ListCardProps) {
                   <div className="absolute inset-0 ring-1 ring-black/15 dark:ring-white/15 rounded-lg pointer-events-none" />
                   {/* Add subtle gradient overlay for depth */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent rounded-lg pointer-events-none" />
-                </div>
+              </div>
               );
             })}
           </div>

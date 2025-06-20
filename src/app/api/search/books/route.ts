@@ -66,7 +66,9 @@ export async function GET(request: NextRequest) {
   const maxResultsParam = searchParams.get('maxResults') || '20';
 
   const page = parseInt(pageParam, 10);
-  const maxResults = parseInt(maxResultsParam, 10);
+  const requestedMaxResults = parseInt(maxResultsParam, 10);
+  // Google Books API has a maximum limit of 40 results per request
+  const maxResults = Math.min(requestedMaxResults, 40);
   const startIndex = (page - 1) * maxResults;
 
   if (!query) {

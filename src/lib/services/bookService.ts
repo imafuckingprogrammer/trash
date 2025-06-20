@@ -211,7 +211,7 @@ export async function getBookDetails(bookId: string): Promise<Book | null> {
 
 function convertGoogleBookToBook(googleBook: any): Book {
   const volumeInfo = googleBook.volumeInfo || {};
-  return {
+     return {
     id: googleBook.id,
     google_book_id: googleBook.id,
     title: volumeInfo.title || 'Unknown Title',

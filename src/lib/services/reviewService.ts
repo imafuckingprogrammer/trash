@@ -1,4 +1,4 @@
-import type { Review, Comment, PaginatedResponse } from '@/types';
+import type { Review, Comment, PaginatedResponse, Book } from '@/types';
 import { supabase, getCurrentUserId } from '@/lib/supabaseClient';
 
 const API_BASE_URL = '/api'; // Adjust
@@ -332,5 +332,163 @@ export async function addCommentToReview(reviewId: string, text: string, parentC
   } catch (error) {
     console.error('Failed to add comment to review:', error);
     throw error;
+  }
+}
+
+/**
+ * Get top reviews from this week based on like count
+ */
+export async function getTopReviewsThisWeek(limit: number = 5): Promise<Review[]> {
+  try {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        *,
+        user:user_profiles(*),
+        book:books(*),
+        like_count
+      `)
+      .gte('created_at', oneWeekAgo.toISOString())
+      .order('like_count', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    const currentUserId = await getCurrentUserId();
+    
+    // Check if current user has liked each review
+    if (currentUserId && data) {
+      const reviewIds = data.map(review => review.id);
+      const { data: likes } = await supabase
+        .from('likes')
+        .select('review_id')
+        .eq('user_id', currentUserId)
+        .in('review_id', reviewIds);
+
+      const likedReviewIds = new Set(likes?.map(like => like.review_id) || []);
+
+      return data.map(review => ({
+        ...review,
+        current_user_has_liked: likedReviewIds.has(review.id),
+      }));
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Failed to get top reviews this week:', error);
+    return [];
+  }
+}
+
+/**
+ * Get top books from this week based on interactions (reads, likes, reviews)
+ */
+export async function getTopBooksThisWeek(limit: number = 6): Promise<Book[]> {
+  try {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    // Get books with most activity this week
+    const { data, error } = await supabase
+      .rpc('get_trending_books_this_week', {
+        limit_count: limit,
+        since_date: oneWeekAgo.toISOString()
+      });
+
+    if (error) {
+      console.warn('RPC function not available, falling back to simple query:', error);
+      
+      // Fallback: get recently reviewed books this week
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('reviews')
+        .select(`
+          book:books(*)
+        `)
+        .gte('created_at', oneWeekAgo.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (fallbackError) throw fallbackError;
+
+      const books = fallbackData?.map(item => item.book).filter(Boolean) || [];
+      const currentUserId = await getCurrentUserId();
+      
+      if (currentUserId) {
+        return await enrichBooksWithUserData(books, currentUserId);
+      }
+      
+      return books;
+    }
+
+    const currentUserId = await getCurrentUserId();
+    
+    if (currentUserId && data) {
+      return await enrichBooksWithUserData(data, currentUserId);
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Failed to get top books this week:', error);
+    return [];
+  }
+}
+
+// Helper function to enrich books with user interaction data
+async function enrichBooksWithUserData(books: any[], userId: string): Promise<Book[]> {
+  if (books.length === 0) return [];
+
+  try {
+    const bookIds = books.map(book => book.id).filter(Boolean);
+    let interactionMap = new Map();
+    
+    if (bookIds.length > 0) {
+      const { data: interactions } = await supabase
+        .from('user_book_interactions')
+        .select('*')
+        .eq('user_id', userId)
+        .in('book_id', bookIds);
+
+      interactions?.forEach(interaction => {
+        interactionMap.set(interaction.book_id, interaction);
+      });
+    }
+
+    return books.map(book => {
+      const interaction = interactionMap.get(book.id);
+      
+      return {
+        ...book,
+        // Fix authors array to string conversion
+        author: Array.isArray(book.authors) && book.authors.length > 0 
+          ? book.authors.join(', ') 
+          : book.author || 'Unknown Author',
+        // Fix cover image URL mapping
+        coverImageUrl: book.cover_image_url || book.coverImageUrl,
+        // Fix rating mapping
+        averageRating: book.average_rating || book.averageRating,
+        // User interaction data
+        currentUserRating: interaction?.rating,
+        currentUserIsRead: interaction?.is_read || false,
+        currentUserIsCurrentlyReading: interaction?.is_currently_reading || false,
+        currentUserReadDate: interaction?.read_date,
+        currentUserIsOnWatchlist: interaction?.is_on_watchlist || false,
+        currentUserIsLiked: interaction?.is_liked || false,
+        currentUserIsOwned: interaction?.is_owned || false,
+      };
+    });
+  } catch (error) {
+    console.error('Failed to enrich books with user data:', error);
+    return books.map(book => ({
+      ...book,
+      author: Array.isArray(book.authors) && book.authors.length > 0 
+        ? book.authors.join(', ') 
+        : book.author || 'Unknown Author',
+      coverImageUrl: book.cover_image_url || book.coverImageUrl,
+      averageRating: book.average_rating || book.averageRating,
+    }));
   }
 }

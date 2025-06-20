@@ -21,23 +21,23 @@ export default function UserSearchPage() {
 
   const handleSearch = async (e?: React.FormEvent<HTMLFormElement>, page: number = 1, loadMore: boolean = false) => {
     if (e) e.preventDefault();
-    
+
     setIsLoading(true);
     setError(null);
     
     if (!loadMore) {
-      setCurrentPage(page);
+    setCurrentPage(page);
       setSearchResults([]);
     }
 
     try {
-      const response: PaginatedResponse<UserProfile> = await searchUsers(searchQuery, page, 100);
+      const response: PaginatedResponse<UserProfile> = await searchUsers(searchQuery, page, 20);
       
       if (loadMore) {
         setSearchResults(prev => [...prev, ...response.items]);
         setCurrentPage(page);
       } else {
-        setSearchResults(response.items);
+      setSearchResults(response.items);
       }
       
       setHasMore(page < response.totalPages);
@@ -67,25 +67,25 @@ export default function UserSearchPage() {
       <section className="bg-card p-6 rounded-lg shadow-md">
         <h1 className="text-3xl font-bold mb-6 font-headline text-primary flex items-center gap-3">
           <Users className="h-8 w-8" />
-          Find Users
+          People
         </h1>
         
         <form onSubmit={(e) => handleSearch(e, 1)} className="space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-grow">
+          <div className="relative flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input 
-                type="search" 
+            <Input 
+              type="search" 
                 placeholder="Search users by username or name..." 
-                className="pl-10 w-full" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+              className="pl-10 w-full" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
             <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
               {isLoading && currentPage === 1 ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Search Users
-            </Button>
+          </Button>
           </div>
         </form>
       </section>
@@ -155,32 +155,32 @@ export default function UserSearchPage() {
         )}
         
         {!isLoading && searchResults.length === 0 && searchQuery && !error && (
-          <div className="text-center py-10 text-muted-foreground">
+           <div className="text-center py-10 text-muted-foreground">
             <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
             <p>No users found matching your search. Try a different term.</p>
           </div>
         )}
         
-        {!isLoading && searchResults.length === 0 && !searchQuery && !error && (
-          <div className="text-center py-10 text-muted-foreground">
+         {!isLoading && searchResults.length === 0 && !searchQuery && !error && (
+           <div className="text-center py-10 text-muted-foreground">
             <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
             <p>Enter a search term to find users.</p>
           </div>
         )}
-        
+
         {hasMore && searchResults.length > 0 && (
           <div className="flex justify-center mt-8">
-            <Button 
+          <Button 
               onClick={loadMoreUsers}
               disabled={isLoading}
-              variant="outline"
+            variant="outline" 
               size="lg"
             >
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Load More Users
-            </Button>
-          </div>
-        )}
+          </Button>
+        </div>
+      )}
       </section>
     </div>
   );

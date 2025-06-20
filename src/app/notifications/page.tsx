@@ -175,7 +175,7 @@ export default function NotificationsPage() {
       )}
       
       {notifications.length > 0 && hasMore && (
-        <div className="text-center mt-8">
+         <div className="text-center mt-8">
           <Button 
             variant="outline" 
             onClick={handleLoadMore} 

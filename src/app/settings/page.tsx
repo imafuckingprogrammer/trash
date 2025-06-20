@@ -277,7 +277,7 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Current Email</Label>
-              <Input value={authUser?.email || 'loading...'} disabled />
+            <Input value={authUser?.email || 'loading...'} disabled />
             </div>
             
             <div className="space-y-4">
@@ -304,8 +304,8 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <h4 className="font-medium">Change Password</h4>
             <form onSubmit={handlePasswordChange} className="space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="newPassword">New Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="newPassword">New Password</Label>
                 <Input 
                   id="newPassword" 
                   type="password"
@@ -314,9 +314,9 @@ export default function SettingsPage() {
                   placeholder="Enter new password"
                   minLength={8}
                 />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
                 <Input 
                   id="confirmNewPassword" 
                   type="password"
@@ -325,12 +325,12 @@ export default function SettingsPage() {
                   placeholder="Confirm new password"
                   minLength={8}
                 />
-              </div>
+            </div>
               <Button type="submit" disabled={isSavingPassword} size="sm">
                 {isSavingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Change Password
-              </Button>
-            </form>
+            </Button>
+          </form>
           </div>
         </CardContent>
       </Card>

@@ -81,7 +81,7 @@ export default function DiscoverPage() {
     });
 
     try {
-      const response: PaginatedResponse<Book> = await searchBooks(bookSearchQuery, page, 100, filters);
+      const response: PaginatedResponse<Book> = await searchBooks(bookSearchQuery, page, 20, filters);
       
       if (loadMore) {
         setBookSearchResults(prev => [...prev, ...response.items]);
@@ -119,7 +119,7 @@ export default function DiscoverPage() {
     }
 
     try {
-      const response: PaginatedResponse<ListCollection> = await searchLists(listSearchQuery, page, 100);
+      const response: PaginatedResponse<ListCollection> = await searchLists(listSearchQuery, page, 20);
       
       if (loadMore) {
         setListSearchResults(prev => [...prev, ...response.items]);
