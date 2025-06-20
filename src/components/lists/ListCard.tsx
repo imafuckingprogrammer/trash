@@ -45,7 +45,7 @@ export function ListCard({ list }: ListCardProps) {
           <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{list.description}</p>
         )}
         {coverImages.length > 0 ? (
-          <div className="relative h-24 mb-2 flex items-center justify-center">
+          <div className="relative h-36 mb-2 flex items-center justify-center">
             {coverImages.slice(0, 4).map((src, index) => {
               const totalBooks = Math.min(coverImages.length, 4);
               const isCenter = totalBooks === 1 || (totalBooks === 3 && index === 1) || (totalBooks === 2 && index === 0) || (totalBooks === 4 && (index === 1 || index === 2));
@@ -54,22 +54,22 @@ export function ListCard({ list }: ListCardProps) {
               // Calculate position offset for overlapping effect - improved spacing
               let leftOffset = 0;
               if (totalBooks === 2) {
-                leftOffset = index === 0 ? -10 : 10;
+                leftOffset = index === 0 ? -14 : 14;
               } else if (totalBooks === 3) {
-                leftOffset = (index - 1) * 12;
+                leftOffset = (index - 1) * 18;
               } else if (totalBooks === 4) {
-                leftOffset = (index - 1.5) * 10;
+                leftOffset = (index - 1.5) * 16;
               }
               
               // Make back books more visible with better opacity and scale
               const isBackBook = !isCenter;
               const opacity = isBackBook ? 0.9 : 1;
-              const scale = isBackBook ? 0.95 : 1;
+              const scale = isBackBook ? 0.9 : 1;
               
               return (
                 <div 
                   key={index} 
-                  className={`absolute w-16 h-20 bg-muted rounded-lg overflow-hidden shadow-lg transition-all duration-200 group-hover:scale-105 ${isCenter ? 'shadow-xl' : 'shadow-lg'}`}
+                  className={`absolute w-24 h-32 bg-muted rounded-lg overflow-hidden shadow-lg transition-all duration-200 group-hover:scale-105 ${isCenter ? 'shadow-2xl' : 'shadow-xl'}`}
                   style={{ 
                     zIndex, 
                     left: `calc(50% + ${leftOffset}px)`,
@@ -83,11 +83,11 @@ export function ListCard({ list }: ListCardProps) {
                       alt={`Book cover ${index + 1}`} 
                       fill
                       className="object-cover rounded-lg"
-                      sizes="64px"
+                      sizes="96px"
                     />
                   ) : (
                     <div className="w-full h-full bg-muted/60 flex items-center justify-center rounded-lg">
-                      <BookOpenCheck className="w-6 h-6 text-muted-foreground/50" />
+                      <BookOpenCheck className="w-10 h-10 text-muted-foreground/50" />
                     </div>
                   )}
                   {/* Enhanced border for better definition */}
@@ -99,8 +99,8 @@ export function ListCard({ list }: ListCardProps) {
             })}
           </div>
         ) : (
-          <div className="h-16 mb-2 flex items-center justify-center bg-muted/30 rounded-md">
-            <BookOpenCheck className="w-8 h-8 text-muted-foreground/50" />
+          <div className="h-32 mb-2 flex items-center justify-center bg-muted/30 rounded-md">
+            <BookOpenCheck className="w-12 h-12 text-muted-foreground/50" />
           </div>
         )}
       </CardContent>

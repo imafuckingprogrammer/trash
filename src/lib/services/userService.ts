@@ -272,6 +272,36 @@ export async function getUserWatchlist(userId: string, page: number = 1, pageSiz
   }
 }
 
+export async function getUserCurrentlyReading(userId: string, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<UserBookInteraction>> {
+  try {
+    const offset = (page - 1) * pageSize;
+    
+    const { data, error, count } = await supabase
+      .from('user_book_interactions')
+      .select(`
+        *,
+        book:books(*)
+      `, { count: 'exact' })
+      .eq('user_id', userId)
+      .eq('is_currently_reading', true)
+      .range(offset, offset + pageSize - 1)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+
+    return {
+      items: data || [],
+      total: count || 0,
+      page,
+      pageSize,
+      totalPages: Math.ceil((count || 0) / pageSize),
+    };
+  } catch (error) {
+    console.error('Failed to get user currently reading books:', error);
+    throw error;
+  }
+}
+
 export async function getUserLikedBooks(userId: string, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<UserBookInteraction>> {
   try {
     const offset = (page - 1) * pageSize;

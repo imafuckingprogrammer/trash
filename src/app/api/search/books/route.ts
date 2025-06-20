@@ -33,30 +33,12 @@ function formatGoogleBook(item: any): Book {
     }
   }
 
-  // Get the highest quality image available
-  let coverImageUrl;
-  if (imageLinks.extraLarge) {
-    coverImageUrl = imageLinks.extraLarge;
-  } else if (imageLinks.large) {
-    coverImageUrl = imageLinks.large;
-  } else if (imageLinks.medium) {
-    coverImageUrl = imageLinks.medium;
-  } else if (imageLinks.small) {
-    coverImageUrl = imageLinks.small;
-  } else if (imageLinks.thumbnail) {
-    // Enhance thumbnail quality by modifying the URL
-    coverImageUrl = imageLinks.thumbnail.replace('&zoom=1', '&zoom=2');
-  } else if (imageLinks.smallThumbnail) {
-    // Enhance small thumbnail quality
-    coverImageUrl = imageLinks.smallThumbnail.replace('&zoom=1', '&zoom=2');
-  }
-
   return {
     id: item.id,
     google_book_id: item.id,
     title: volumeInfo.title || 'No title',
     author: volumeInfo.authors && volumeInfo.authors.length > 0 ? volumeInfo.authors.join(', ') : 'Unknown Author',
-    coverImageUrl,
+    coverImageUrl: imageLinks.large || imageLinks.medium || imageLinks.small || imageLinks.thumbnail?.replace('http:', 'https:') || imageLinks.smallThumbnail?.replace('http:', 'https:') || undefined,
     summary: volumeInfo.description || 'No summary available.',
     averageRating: volumeInfo.averageRating,
     genres: volumeInfo.categories || [],
@@ -134,20 +116,10 @@ export async function GET(request: NextRequest) {
 
     const googleData = await googleResponse.json();
     const booksFromGoogle: Book[] = googleData.items ? googleData.items.map(formatGoogleBook) : [];
-    const totalItems = googleData.totalItems || 0;
 
-    console.log(`Found ${booksFromGoogle.length} books for query: "${query}", total: ${totalItems}`);
+    console.log(`Found ${booksFromGoogle.length} books for query: "${query}"`);
     
-    // Return paginated response
-    const response = {
-      items: booksFromGoogle,
-      total: totalItems,
-      page,
-      pageSize: maxResults,
-      totalPages: Math.ceil(totalItems / maxResults),
-    };
-    
-    return NextResponse.json(response);
+    return NextResponse.json(booksFromGoogle);
   } catch (error) {
     console.error('Failed to fetch books:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';

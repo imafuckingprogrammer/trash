@@ -1,4 +1,3 @@
-
 // Represents an authenticated user from your auth provider (e.g., Supabase Auth)
 export type AuthUser = {
   id: string; // Typically the UUID from the auth provider
@@ -36,6 +35,7 @@ export type Book = {
   // and are made optional here.
   currentUserRating?: number;
   currentUserIsRead?: boolean;
+  currentUserIsCurrentlyReading?: boolean;
   currentUserReadDate?: string;
   currentUserIsOnWatchlist?: boolean;
   currentUserIsLiked?: boolean;
@@ -106,6 +106,7 @@ export type UserBookInteraction = {
   book_id: string;
   book?: Book; // Populated from join
   is_read?: boolean;
+  is_currently_reading?: boolean;
   read_date?: string; // ISO date string
   rating?: number;
   is_owned?: boolean;

@@ -58,8 +58,7 @@ export async function searchBooks(query: string, page: number = 1, pageSize: num
       throw new Error(errorData.error || `Request failed with status ${response.status}`);
     }
     
-    const apiResponse = await response.json();
-    const googleBooks: Book[] = apiResponse.items || [];
+    const googleBooks: Book[] = await response.json();
     
     // Cache new books in database
     if (googleBooks.length > 0) {
@@ -72,10 +71,10 @@ export async function searchBooks(query: string, page: number = 1, pageSize: num
     
     return {
       items: booksWithUserData,
-      total: apiResponse.total || 0,
-      page: apiResponse.page || page,
-      pageSize: apiResponse.pageSize || pageSize,
-      totalPages: apiResponse.totalPages || Math.ceil((apiResponse.total || 0) / pageSize),
+      total: booksWithUserData.length > 0 ? booksWithUserData.length * (page + 1) : 0,
+      page,
+      pageSize,
+      totalPages: booksWithUserData.length > 0 ? page + 1 : page,
     };
   } catch (error) {
     console.error('Failed to search books:', error);
@@ -147,6 +146,7 @@ async function enrichBooksWithUserData(books: any[], userId?: string): Promise<B
         // User interaction data
         currentUserRating: interaction?.rating,
         currentUserIsRead: interaction?.is_read || false,
+        currentUserIsCurrentlyReading: interaction?.is_currently_reading || false,
         currentUserReadDate: interaction?.read_date,
         currentUserIsOnWatchlist: interaction?.is_on_watchlist || false,
         currentUserIsLiked: interaction?.is_liked || false,
@@ -223,7 +223,7 @@ function convertGoogleBookToBook(googleBook: any): Book {
     publicationYear: volumeInfo.publishedDate ? parseInt(volumeInfo.publishedDate.split('-')[0]) : undefined,
     isbn: volumeInfo.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier,
     genres: volumeInfo.categories || [],
-  };
+    };
 }
 
 export async function getBookReviews(bookId: string, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<Review>> {
@@ -277,9 +277,9 @@ export async function addBookReview(bookId: string, rating: number, reviewText?:
       .from('reviews')
       .upsert({
         user_id: currentUserId,
-        book_id: bookId,
-        rating,
-        review_text: reviewText,
+    book_id: bookId,
+    rating,
+    review_text: reviewText,
       }, {
         onConflict: 'user_id,book_id'
       })
@@ -361,8 +361,8 @@ export async function updateUserBookInteraction(bookId: string, interaction: Par
       .from('user_book_interactions')
       .upsert({
         user_id: currentUserId,
-        book_id: bookId,
-        ...interaction,
+    book_id: bookId,
+    ...interaction,
       }, {
         onConflict: 'user_id,book_id'
       })
@@ -421,6 +421,48 @@ export async function unlikeBook(bookId: string): Promise<void> {
     await updateUserBookInteraction(bookId, { is_liked: false });
   } catch (error) {
     console.error('Failed to unlike book:', error);
+    throw error;
+  }
+}
+
+export async function markAsCurrentlyReading(bookId: string): Promise<void> {
+  try {
+    await updateUserBookInteraction(bookId, { 
+      is_currently_reading: true,
+      is_on_watchlist: false // Remove from watchlist when starting to read
+    });
+  } catch (error) {
+    console.error('Failed to mark book as currently reading:', error);
+    throw error;
+  }
+}
+
+export async function removeFromCurrentlyReading(bookId: string): Promise<void> {
+  try {
+    await updateUserBookInteraction(bookId, { is_currently_reading: false });
+  } catch (error) {
+    console.error('Failed to remove book from currently reading:', error);
+    throw error;
+  }
+}
+
+export async function addToWatchlist(bookId: string): Promise<void> {
+  try {
+    await updateUserBookInteraction(bookId, { 
+      is_on_watchlist: true,
+      is_currently_reading: false // Remove from currently reading when adding to watchlist
+    });
+  } catch (error) {
+    console.error('Failed to add book to watchlist:', error);
+    throw error;
+  }
+}
+
+export async function removeFromWatchlist(bookId: string): Promise<void> {
+  try {
+    await updateUserBookInteraction(bookId, { is_on_watchlist: false });
+  } catch (error) {
+    console.error('Failed to remove book from watchlist:', error);
     throw error;
   }
 }

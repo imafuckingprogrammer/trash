@@ -105,10 +105,10 @@ function NotificationsDropdown() {
           notifications.map(notification => (
             <DropdownMenuItem key={notification.id} asChild className="cursor-pointer">
               <Link href={getNotificationHref(notification)} className="flex items-start gap-3 py-2.5">
-                <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8">
                   <AvatarImage src={notification.actor?.avatar_url || 'https://placehold.co/40x40.png'} alt={notification.actor?.username} />
                   <AvatarFallback>{notification.actor?.username?.substring(0,1)?.toUpperCase() || 'U'}</AvatarFallback>
-                </Avatar>
+                  </Avatar>
                 <div className="flex-1">
                   <p className="text-sm leading-snug">
                     <span className="font-semibold">{notification.actor?.username || 'Someone'}</span> {getNotificationText(notification)}
@@ -152,9 +152,6 @@ function Header() {
           </Link>
           <Link href="/discover" className="text-foreground/70 transition-colors hover:text-foreground">
             Discover
-          </Link>
-          <Link href="/search/users" className="text-foreground/70 transition-colors hover:text-foreground">
-            People
           </Link>
           {isAuthenticated && (
             <Link href="/lists" className="text-foreground/70 transition-colors hover:text-foreground">
@@ -250,14 +247,14 @@ export default function RootLayout({
       </head>
       <body className={cn("min-h-screen bg-background font-body antialiased flex flex-col")}>
         <ThemeProvider>
-          <AuthProvider> {/* Wrap with AuthProvider */}
-            <Header />
-            <main className="flex-grow container mx-auto px-4 py-8">
-              {children}
-            </main>
-            <Footer />
-            <Toaster />
-          </AuthProvider>
+        <AuthProvider> {/* Wrap with AuthProvider */}
+          <Header />
+          <main className="flex-grow container mx-auto px-4 py-8">
+            {children}
+          </main>
+          <Footer />
+          <Toaster />
+        </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
