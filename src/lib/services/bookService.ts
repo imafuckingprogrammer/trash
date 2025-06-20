@@ -211,19 +211,46 @@ export async function getBookDetails(bookId: string): Promise<Book | null> {
 
 function convertGoogleBookToBook(googleBook: any): Book {
   const volumeInfo = googleBook.volumeInfo || {};
-     return {
+  const imageLinks = volumeInfo.imageLinks || {};
+  
+  // Get highest quality cover image
+  const getHighestQualityCover = () => {
+    const coverUrl = imageLinks.extraLarge || 
+                    imageLinks.large || 
+                    imageLinks.medium || 
+                    imageLinks.small || 
+                    imageLinks.thumbnail || 
+                    imageLinks.smallThumbnail;
+    
+    if (!coverUrl) return undefined;
+    
+    // Ensure HTTPS and try to get higher resolution
+    let highResUrl = coverUrl.replace('http:', 'https:');
+    
+    // For Google Books images, optimize for higher resolution
+    if (highResUrl.includes('books.google.com')) {
+      highResUrl = highResUrl.replace(/&zoom=\d+/, '').replace(/&w=\d+/, '').replace(/&h=\d+/, '');
+      if (!highResUrl.includes('zoom=')) {
+        highResUrl += '&zoom=1';
+      }
+    }
+    
+    return highResUrl;
+  };
+
+  return {
     id: googleBook.id,
     google_book_id: googleBook.id,
     title: volumeInfo.title || 'Unknown Title',
     author: volumeInfo.authors && volumeInfo.authors.length > 0 
       ? volumeInfo.authors.join(', ') 
       : 'Unknown Author',
-    coverImageUrl: volumeInfo.imageLinks?.thumbnail || volumeInfo.imageLinks?.smallThumbnail,
+    coverImageUrl: getHighestQualityCover(),
     summary: volumeInfo.description,
     publicationYear: volumeInfo.publishedDate ? parseInt(volumeInfo.publishedDate.split('-')[0]) : undefined,
     isbn: volumeInfo.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier,
     genres: volumeInfo.categories || [],
-    };
+  };
 }
 
 export async function getBookReviews(bookId: string, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<Review>> {

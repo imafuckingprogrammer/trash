@@ -38,13 +38,43 @@ function formatGoogleBook(item: any): Book {
     google_book_id: item.id,
     title: volumeInfo.title || 'No title',
     author: volumeInfo.authors && volumeInfo.authors.length > 0 ? volumeInfo.authors.join(', ') : 'Unknown Author',
-    coverImageUrl: imageLinks.large || imageLinks.medium || imageLinks.small || imageLinks.thumbnail?.replace('http:', 'https:') || imageLinks.smallThumbnail?.replace('http:', 'https:') || undefined,
+    coverImageUrl: getHighestQualityCover(imageLinks),
     summary: volumeInfo.description || 'No summary available.',
     averageRating: volumeInfo.averageRating,
     genres: volumeInfo.categories || [],
     publicationYear,
     isbn,
   };
+}
+
+// Helper function to get the highest quality cover image
+function getHighestQualityCover(imageLinks: any): string | undefined {
+  if (!imageLinks) return undefined;
+  
+  // Priority order: extraLarge -> large -> medium -> small -> thumbnail -> smallThumbnail
+  const coverUrl = imageLinks.extraLarge || 
+                  imageLinks.large || 
+                  imageLinks.medium || 
+                  imageLinks.small || 
+                  imageLinks.thumbnail || 
+                  imageLinks.smallThumbnail;
+  
+  if (!coverUrl) return undefined;
+  
+  // Ensure HTTPS and try to get higher resolution by modifying the URL
+  let highResUrl = coverUrl.replace('http:', 'https:');
+  
+  // For Google Books images, we can sometimes get higher resolution by modifying the URL parameters
+  if (highResUrl.includes('books.google.com')) {
+    // Remove size restrictions and zoom parameters to get full resolution
+    highResUrl = highResUrl.replace(/&zoom=\d+/, '').replace(/&w=\d+/, '').replace(/&h=\d+/, '');
+    // Add high resolution parameters
+    if (!highResUrl.includes('zoom=')) {
+      highResUrl += '&zoom=1';
+    }
+  }
+  
+  return highResUrl;
 }
 
 // Example Helper for Open Library (needs to be adapted based on actual response structure)
