@@ -21,13 +21,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Example filters - these would map to backend query parameters
-const genres = ["Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller", "Non-Fiction", "History", "Biography"];
-const publicationYears = ["2024", "2023", "2020s", "2010s", "2000s", "1990s", "Older"];
+// Comprehensive filters for book discovery
+const genres = [
+  "Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller", 
+  "Romance", "Horror", "Adventure", "Biography", "History", "Self-Help", 
+  "Business", "Philosophy", "Psychology", "Science", "Technology", "Art", 
+  "Travel", "Cooking", "Health", "Religion", "Poetry", "Drama", "Comedy",
+  "Young Adult", "Children's Books", "Comics", "Graphic Novels", "Reference"
+];
+const publicationYears = ["2024", "2023", "2022", "2021", "2020", "2015-2019", "2010-2014", "2000-2009", "1990-1999", "Before 1990"];
 const sortOptions = [
   { value: "relevance", label: "Relevance" },
   { value: "newest", label: "Newest First" },
+  { value: "oldest", label: "Oldest First" },
   { value: "rating", label: "Highest Rated" },
+  { value: "title", label: "Title A-Z" },
+  { value: "author", label: "Author A-Z" },
 ];
 
 export default function DiscoverPage() {
@@ -146,9 +155,34 @@ export default function DiscoverPage() {
   };
 
   const toggleGenre = (genre: string) => {
-    setSelectedGenres(prev => 
-      prev.includes(genre) ? prev.filter(g => g !== genre) : [...prev, genre]
-    );
+    const newGenres = selectedGenres.includes(genre) 
+      ? selectedGenres.filter(g => g !== genre) 
+      : [...selectedGenres, genre];
+    setSelectedGenres(newGenres);
+    
+    // Trigger search with new filters
+    if (bookSearchQuery || newGenres.length > 0 || selectedYear || selectedSortBy !== "relevance") {
+      setTimeout(() => handleBookSearch(undefined, 1), 100);
+    }
+  };
+
+  const handleYearChange = (year: string) => {
+    const newYear = selectedYear === year ? "" : year;
+    setSelectedYear(newYear);
+    
+    // Trigger search with new filters
+    if (bookSearchQuery || selectedGenres.length > 0 || newYear || selectedSortBy !== "relevance") {
+      setTimeout(() => handleBookSearch(undefined, 1), 100);
+    }
+  };
+
+  const handleSortChange = (sortBy: string) => {
+    setSelectedSortBy(sortBy);
+    
+    // Trigger search with new filters
+    if (bookSearchQuery || selectedGenres.length > 0 || selectedYear || sortBy !== "relevance") {
+      setTimeout(() => handleBookSearch(undefined, 1), 100);
+    }
   };
 
   const loadMoreBooks = () => {
@@ -260,12 +294,12 @@ export default function DiscoverPage() {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Publication Year</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={!selectedYear} onCheckedChange={() => setSelectedYear("")}>Any Year</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={!selectedYear} onCheckedChange={() => handleYearChange("")}>Any Year</DropdownMenuCheckboxItem>
                     {publicationYears.map(year => (
                       <DropdownMenuCheckboxItem
                         key={year}
                         checked={selectedYear === year}
-                        onCheckedChange={() => setSelectedYear(selectedYear === year ? "" : year)}
+                        onCheckedChange={() => handleYearChange(year)}
                       >
                         {year}
                       </DropdownMenuCheckboxItem>
@@ -284,7 +318,7 @@ export default function DiscoverPage() {
                       <DropdownMenuCheckboxItem
                         key={opt.value}
                         checked={selectedSortBy === opt.value}
-                        onCheckedChange={() => setSelectedSortBy(opt.value)}
+                        onCheckedChange={() => handleSortChange(opt.value)}
                       >
                         {opt.label}
                       </DropdownMenuCheckboxItem>
@@ -348,8 +382,7 @@ export default function DiscoverPage() {
                 {bookSearchResults.map((book) => (
                   <BookCard 
                     key={book.id || book.google_book_id || book.open_library_id} 
-                    book={book} 
-                    onCurrentlyReadingToggle={handleCurrentlyReadingToggle}
+                    book={book}
                   />
                 ))}
               </div>

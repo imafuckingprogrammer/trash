@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Loader2, Newspaper, TrendingUp, Star, BookOpen, Calendar } from 'lucide-react';
+import { Loader2, Newspaper, TrendingUp, Star, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookCard } from '@/components/books/BookCard';
 import { ReviewCard } from '@/components/reviews/ReviewCard';
 import { getPopularBooks, getRecentlyReviewedBooks, markAsCurrentlyReading, removeFromCurrentlyReading } from '@/lib/services/bookService';
@@ -52,10 +51,16 @@ export default function FeedPage() {
         getTopBooksThisWeek(6)
       ]);
       
+      // Remove duplicates and ensure unique books in each section
+      const popularBookIds = new Set(popular.map(book => book.id || book.google_book_id));
+      const uniqueTopBooks = topBooks.filter(book => !popularBookIds.has(book.id || book.google_book_id));
+      const allUsedBookIds = new Set([...popularBookIds, ...uniqueTopBooks.map(book => book.id || book.google_book_id)]);
+      const uniqueRecentlyReviewed = recentlyReviewed.filter(book => !allUsedBookIds.has(book.id || book.google_book_id));
+      
       setPopularBooks(popular);
-      setRecentlyReviewedBooks(recentlyReviewed);
+      setRecentlyReviewedBooks(uniqueRecentlyReviewed);
       setTopReviewsThisWeek(topReviews);
-      setTopBooksThisWeek(topBooks);
+      setTopBooksThisWeek(uniqueTopBooks);
     } catch (error) {
       console.error('Failed to load popular content:', error);
     } finally {
@@ -209,7 +214,7 @@ export default function FeedPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {popularBooks.map((book) => (
                   <BookCard 
-                    key={book.id || book.google_book_id} 
+                    key={`popular-${book.id || book.google_book_id}`} 
                     book={book} 
                     onCurrentlyReadingToggle={handleCurrentlyReadingToggle}
                   />
@@ -219,76 +224,12 @@ export default function FeedPage() {
           </CardContent>
         </Card>
 
-        {/* Weekly Features */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              This Week's Highlights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="reviews" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="reviews" className="flex items-center gap-2">
-                  <Star className="h-4 w-4" />
-                  Top Reviews
-                </TabsTrigger>
-                <TabsTrigger value="books" className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Trending Books
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="reviews" className="space-y-4">
-                {loadingPopular ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  </div>
-                                 ) : topReviewsThisWeek.length > 0 ? (
-                   <div className="space-y-4">
-                     {topReviewsThisWeek.map((review) => (
-                       <ReviewCard key={review.id} review={review} onLikeReview={handleLikeReview} />
-                     ))}
-                   </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    No popular reviews this week yet.
-                  </p>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="books" className="space-y-4">
-                {loadingPopular ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  </div>
-                ) : topBooksThisWeek.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {topBooksThisWeek.map((book) => (
-                      <BookCard 
-                        key={book.id || book.google_book_id} 
-                        book={book} 
-                        onCurrentlyReadingToggle={handleCurrentlyReadingToggle}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    No trending books this week yet.
-                  </p>
-                )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* Recently Reviewed Books */}
+                {/* Top Reviews This Week */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5" />
-              Recently Reviewed
+              Top Reviews This Week
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -296,19 +237,77 @@ export default function FeedPage() {
               <div className="flex justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin" />
               </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {recentlyReviewedBooks.map((book) => (
-                  <BookCard 
-                    key={book.id || book.google_book_id} 
-                    book={book} 
-                    onCurrentlyReadingToggle={handleCurrentlyReadingToggle}
-                  />
+            ) : topReviewsThisWeek.length > 0 ? (
+              <div className="space-y-4">
+                {topReviewsThisWeek.map((review) => (
+                  <ReviewCard key={review.id} review={review} onLikeReview={handleLikeReview} />
                 ))}
               </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                No popular reviews this week yet.
+              </p>
             )}
           </CardContent>
         </Card>
+
+        {/* Trending Books This Week */}
+        {topBooksThisWeek.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Trending Books This Week
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingPopular ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {topBooksThisWeek.map((book) => (
+                    <BookCard 
+                      key={`trending-${book.id || book.google_book_id}`} 
+                      book={book} 
+                      onCurrentlyReadingToggle={handleCurrentlyReadingToggle}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Recently Reviewed Books */}
+        {recentlyReviewedBooks.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5" />
+                Recently Reviewed
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingPopular ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {recentlyReviewedBooks.map((book) => (
+                    <BookCard 
+                      key={`recent-${book.id || book.google_book_id}`} 
+                      book={book} 
+                      onCurrentlyReadingToggle={handleCurrentlyReadingToggle}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
