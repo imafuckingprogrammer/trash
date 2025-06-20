@@ -74,15 +74,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Build Google Books API URL
-    let googleBooksUrl = `${GOOGLE_BOOKS_API_URL}?q=${encodeURIComponent(query)}&startIndex=${startIndex}&maxResults=${maxResults}`;
-    
-    // Only add API key if it exists and is not empty
-    if (GOOGLE_API_KEY && GOOGLE_API_KEY.trim() !== '') {
-      googleBooksUrl += `&key=${GOOGLE_API_KEY}`;
-    }
+    // Build Google Books API URL without API key to use free quota
+    const googleBooksUrl = `${GOOGLE_BOOKS_API_URL}?q=${encodeURIComponent(query)}&startIndex=${startIndex}&maxResults=${maxResults}`;
 
-    console.log('Calling Google Books API:', googleBooksUrl.replace(GOOGLE_API_KEY || '', '[API_KEY]'));
+    console.log('Calling Google Books API (free quota):', googleBooksUrl);
 
     const googleResponse = await fetch(googleBooksUrl);
     
@@ -96,16 +91,6 @@ export async function GET(request: NextRequest) {
         errorDetails = JSON.parse(errorData);
       } catch {
         errorDetails = { message: errorData };
-      }
-
-      // If API key is invalid or missing, provide helpful error
-      if (errorDetails.error?.message?.includes('API key')) {
-        console.error('Google Books API Key Issue:', errorDetails.error.message);
-        return NextResponse.json({ 
-          error: 'Google Books API key is invalid or missing. Please check your environment configuration.',
-          details: errorDetails.error.message,
-          suggestion: 'Verify GOOGLE_BOOKS_API_KEY in your .env.local file'
-        }, { status: 401 });
       }
 
       return NextResponse.json({ 

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -23,6 +22,7 @@ interface LogBookDialogProps {
   onLogSaved: (logDetails: {
     rating?: number;
     isRead?: boolean;
+    isCurrentlyReading?: boolean;
     readDate?: string; // ISO string
     reviewText?: string;
   }) => Promise<void>; // Make it async
@@ -34,6 +34,7 @@ export function LogBookDialog({ book, isOpen, onOpenChange, onLogSaved, existing
   const { toast } = useToast();
   const [rating, setRating] = useState<number | undefined>(initialInteraction.rating ?? existingReview?.rating);
   const [isRead, setIsRead] = useState<boolean>(initialInteraction.is_read ?? !!existingReview);
+  const [isCurrentlyReading, setIsCurrentlyReading] = useState<boolean>(initialInteraction.is_currently_reading ?? false);
   const [readDate, setReadDate] = useState<Date | undefined>(
     initialInteraction.read_date ? new Date(initialInteraction.read_date) : (existingReview?.created_at ? new Date(existingReview.created_at) : undefined)
   );
@@ -44,6 +45,7 @@ export function LogBookDialog({ book, isOpen, onOpenChange, onLogSaved, existing
     // Reset form when dialog opens or relevant props change
     setRating(initialInteraction.rating ?? existingReview?.rating);
     setIsRead(initialInteraction.is_read ?? !!existingReview); // A review implies it's read
+    setIsCurrentlyReading(initialInteraction.is_currently_reading ?? false);
     setReadDate(initialInteraction.read_date ? new Date(initialInteraction.read_date) : (existingReview?.created_at ? new Date(existingReview.created_at) : undefined));
     setReviewText(existingReview?.review_text || '');
   }, [isOpen, book, existingReview, initialInteraction]);
@@ -67,6 +69,7 @@ export function LogBookDialog({ book, isOpen, onOpenChange, onLogSaved, existing
         await onLogSaved({
             rating: isRead ? rating : undefined, // Only save rating if read
             isRead: isRead,
+            isCurrentlyReading: isCurrentlyReading,
             readDate: isRead && readDate ? readDate.toISOString() : undefined,
             reviewText: isRead ? reviewText : '', // Only save review text if read
         });
@@ -100,22 +103,40 @@ export function LogBookDialog({ book, isOpen, onOpenChange, onLogSaved, existing
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="isRead" 
-              checked={isRead} 
-              onCheckedChange={(checked) => {
-                const newIsRead = Boolean(checked);
-                setIsRead(newIsRead);
-                if (!newIsRead) {
-                    // Optionally clear date if unchecking "read"
-                    // setReadDate(undefined); 
-                } else if (newIsRead && !readDate) {
-                    setReadDate(new Date()); // Default to today if marking as read and no date
-                }
-              }}
-            />
-            <Label htmlFor="isRead" className="font-medium">I have read this book</Label>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="isCurrentlyReading" 
+                checked={isCurrentlyReading} 
+                onCheckedChange={(checked) => {
+                  const newIsCurrentlyReading = Boolean(checked);
+                  setIsCurrentlyReading(newIsCurrentlyReading);
+                  if (newIsCurrentlyReading) {
+                    setIsRead(false); // Can't be both currently reading and read
+                    setReadDate(undefined);
+                  }
+                }}
+              />
+              <Label htmlFor="isCurrentlyReading" className="font-medium">I am currently reading this book</Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="isRead" 
+                checked={isRead} 
+                onCheckedChange={(checked) => {
+                  const newIsRead = Boolean(checked);
+                  setIsRead(newIsRead);
+                  if (newIsRead) {
+                    setIsCurrentlyReading(false); // Can't be both read and currently reading
+                    if (!readDate) {
+                      setReadDate(new Date()); // Default to today if marking as read and no date
+                    }
+                  }
+                }}
+              />
+              <Label htmlFor="isRead" className="font-medium">I have read this book</Label>
+            </div>
           </div>
 
           {isRead && (

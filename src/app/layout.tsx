@@ -158,6 +158,28 @@ function Header() {
               My Lists
             </Link>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-foreground/70 hover:text-foreground">
+                <Search className="h-4 w-4 mr-2" />
+                Search
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem asChild>
+                <Link href="/search/users" className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  Find Users
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/search/lists" className="cursor-pointer">
+                  <List className="mr-2 h-4 w-4" />
+                  Find Lists
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-2">
           {isLoading ? (

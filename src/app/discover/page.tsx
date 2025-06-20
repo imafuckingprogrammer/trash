@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Filter, Loader2, BookOpen, List } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { searchBooks } from '@/lib/services/bookService';
+import { searchBooks, markAsCurrentlyReading, removeFromCurrentlyReading } from '@/lib/services/bookService';
 import { searchLists } from '@/lib/services/listService';
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +31,7 @@ const sortOptions = [
 ];
 
 export default function DiscoverPage() {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('books');
   
   // Books state
@@ -158,6 +160,40 @@ export default function DiscoverPage() {
   const loadMoreLists = () => {
     if (listHasMore && !listIsLoading) {
       handleListSearch(undefined, listCurrentPage + 1, true);
+    }
+  };
+
+  const handleCurrentlyReadingToggle = async (bookId: string, isCurrentlyReading: boolean) => {
+    try {
+      if (isCurrentlyReading) {
+        await markAsCurrentlyReading(bookId);
+        toast({
+          title: "Added to Currently Reading",
+          description: "Book has been added to your currently reading list.",
+        });
+      } else {
+        await removeFromCurrentlyReading(bookId);
+        toast({
+          title: "Removed from Currently Reading",
+          description: "Book has been removed from your currently reading list.",
+        });
+      }
+      
+      // Update the book in the search results
+      setBookSearchResults(prev => 
+        prev.map(book => 
+          (book.id || book.google_book_id) === bookId 
+            ? { ...book, currentUserIsCurrentlyReading: isCurrentlyReading }
+            : book
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update currently reading status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update reading status. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -310,7 +346,11 @@ export default function DiscoverPage() {
             {!bookIsLoading && bookSearchResults.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 {bookSearchResults.map((book) => (
-                  <BookCard key={book.id || book.google_book_id || book.open_library_id} book={book} />
+                  <BookCard 
+                    key={book.id || book.google_book_id || book.open_library_id} 
+                    book={book} 
+                    onCurrentlyReadingToggle={handleCurrentlyReadingToggle}
+                  />
                 ))}
               </div>
             )}
