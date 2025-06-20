@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Literata', serif;
+}
+
+@layer base {
+  :root {
+    --background: 40 27% 94%; /* Off-white #F2F0EC */
+    --foreground: 20 10% 25%; /* Dark Gray for text */
+
+    --card: 40 27% 94%;
+    --card-foreground: 20 10% 25%;
+
+    --popover: 40 27% 92%;
+    --popover-foreground: 20 10% 25%;
+
+    --primary: 152 25% 39%; /* Dark moss green #4A7D65 */
+    --primary-foreground: 150 20% 95%; /* Light color for text on primary */
+
+    --secondary: 152 20% 65%; /* Lighter moss green */
+    --secondary-foreground: 152 25% 15%; /* Darker text for secondary */
+
+    --muted: 40 20% 88%;
+    --muted-foreground: 20 10% 45%;
+
+    --accent: 41 23% 53%; /* Muted gold #A5916B */
+    --accent-foreground: 40 20% 15%; /* Dark color for text on accent */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 40 20% 80%;
+    --input: 40 20% 85%;
+    --ring: 152 25% 39%; /* Primary color for rings */
+
+    --radius: 0.5rem;
+
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 20 10% 10%; /* Dark background for dark mode */
+    --foreground: 40 20% 90%; /* Light text for dark mode */
+
+    --card: 20 10% 10%;
+    --card-foreground: 40 20% 90%;
+
+    --popover: 20 10% 12%;
+    --popover-foreground: 40 20% 90%;
+
+    --primary: 152 35% 55%; /* Much lighter moss green for dark mode */
+    --primary-foreground: 150 20% 95%;
+
+    --secondary: 152 30% 40%;
+    --secondary-foreground: 150 20% 90%;
+
+    --muted: 20 10% 20%;
+    --muted-foreground: 40 20% 60%;
+
+    --accent: 41 23% 60%; /* Slightly lighter gold for dark mode */
+    --accent-foreground: 40 20% 15%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 20 10% 25%;
+    --input: 20 10% 25%;
+    --ring: 152 25% 45%;
+
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
