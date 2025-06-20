@@ -535,3 +535,28 @@ export async function getRecentlyReviewedBooks(limit: number = 4): Promise<Book[
     return [];
   }
 }
+
+export async function getCurrentlyReadingBooks(limit: number = 6): Promise<Book[]> {
+  try {
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) return [];
+
+    const { data, error } = await supabase
+      .from('user_book_interactions')
+      .select(`
+        book:books(*)
+      `)
+      .eq('user_id', currentUserId)
+      .eq('is_currently_reading', true)
+      .order('updated_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    const books = data?.map(item => item.book).filter(Boolean) || [];
+    return enrichBooksWithUserData(books, currentUserId);
+  } catch (error) {
+    console.error('Failed to get currently reading books:', error);
+    return [];
+  }
+}

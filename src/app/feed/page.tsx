@@ -7,6 +7,7 @@ import { Loader2, Newspaper, TrendingUp, Star, BookOpen, Calendar } from 'lucide
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookCard } from '@/components/books/BookCard';
 import { ReviewCard } from '@/components/reviews/ReviewCard';
+import { CurrentlyReadingPanel } from '@/components/books/CurrentlyReadingPanel';
 import { getPopularBooks, getRecentlyReviewedBooks, markAsCurrentlyReading, removeFromCurrentlyReading } from '@/lib/services/bookService';
 import { getTopReviewsThisWeek, getTopBooksThisWeek, likeReview, unlikeReview } from '@/lib/services/reviewService';
 import type { Book, Review } from '@/types';
@@ -154,6 +155,9 @@ export default function FeedPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-headline text-primary">Your Feed</h1>
       </div>
+
+      {/* Currently Reading Panel */}
+      <CurrentlyReadingPanel />
 
       {/* Main Feed Content */}
       {isLoadingFeed ? (
