@@ -11,7 +11,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
 import { Textarea } from '../ui/textarea';
 import { CommentCard } from '../comments/CommentCard';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/OptimizedAuthContext';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 // Import relevant services

@@ -7,7 +7,7 @@ import { ListCard } from '@/components/lists/ListCard';
 import type { ListCollection, PaginatedResponse } from '@/types';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/OptimizedAuthContext';
 import { getUserLists } from '@/lib/services/userService'; // Assuming this fetches lists for the logged-in user
 
 export default function ListsPage() {

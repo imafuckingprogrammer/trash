@@ -414,14 +414,14 @@ export async function getTopBooksThisWeek(limit: number = 6): Promise<Book[]> {
 
       if (fallbackError) throw fallbackError;
 
-      const books = fallbackData?.map(item => item.book).filter(Boolean) || [];
+      const books = fallbackData?.map(item => (item as any).book).filter(Boolean) || [];
       const currentUserId = await getCurrentUserId();
       
       if (currentUserId) {
         return await enrichBooksWithUserData(books, currentUserId);
       }
       
-      return books;
+      return books as Book[];
     }
 
     const currentUserId = await getCurrentUserId();

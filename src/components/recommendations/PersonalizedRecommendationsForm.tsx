@@ -9,18 +9,82 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Sparkles } from 'lucide-react';
-import type { GenerateBookRecommendationsInput, GenerateBookRecommendationsOutput } from '@/ai/flows/generate-book-recommendations';
-import { generateBookRecommendations } from '@/ai/flows/generate-book-recommendations'; // Ensure this path is correct
+import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+
+// Temporary types while AI is disabled
+interface BookRecommendation {
+  title: string;
+  author: string;
+  genre: string;
+  description: string;
+  reasoning: string;
+  matchScore: number;
+}
+
+interface GenerateBookRecommendationsOutput {
+  recommendations: BookRecommendation[];
+  totalRecommendations: number;
+}
 
 const formSchema = z.object({
   readingHistory: z.string().min(10, "Please provide some reading history (at least 10 characters)."),
   preferences: z.string().min(5, "Please describe your preferences (at least 5 characters)."),
 });
 
+// Mock recommendations for when AI is disabled
+const getMockRecommendations = (readingHistory: string, preferences: string): GenerateBookRecommendationsOutput => {
+  const mockRecommendations: BookRecommendation[] = [
+    {
+      title: "The Seven Husbands of Evelyn Hugo",
+      author: "Taylor Jenkins Reid",
+      genre: "Historical Fiction",
+      description: "A reclusive Hollywood icon finally tells her story to a young journalist.",
+      reasoning: "Popular contemporary fiction with strong character development",
+      matchScore: 85
+    },
+    {
+      title: "Project Hail Mary",
+      author: "Andy Weir",
+      genre: "Science Fiction",
+      description: "A lone astronaut must save humanity with science and humor.",
+      reasoning: "Engaging science fiction with problem-solving elements",
+      matchScore: 90
+    },
+    {
+      title: "The Midnight Library",
+      author: "Matt Haig",
+      genre: "Contemporary Fiction",
+      description: "A library between life and death where you can experience different versions of your life.",
+      reasoning: "Thought-provoking contemporary fiction with philosophical themes",
+      matchScore: 88
+    },
+    {
+      title: "Klara and the Sun",
+      author: "Kazuo Ishiguro",
+      genre: "Literary Fiction",
+      description: "An artificial friend observes the world with extraordinary insight.",
+      reasoning: "Literary fiction with unique perspective and beautiful prose",
+      matchScore: 82
+    },
+    {
+      title: "The Invisible Life of Addie LaRue",
+      author: "V.E. Schwab",
+      genre: "Fantasy",
+      description: "A woman cursed to be forgotten by everyone she meets lives for centuries.",
+      reasoning: "Romantic fantasy with historical elements and unique premise",
+      matchScore: 87
+    }
+  ];
+
+  return {
+    recommendations: mockRecommendations,
+    totalRecommendations: mockRecommendations.length
+  };
+};
+
 export function PersonalizedRecommendationsForm() {
-  const [recommendations, setRecommendations] = useState<string[] | null>(null);
+  const [recommendations, setRecommendations] = useState<BookRecommendation[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -39,15 +103,16 @@ export function PersonalizedRecommendationsForm() {
     setRecommendations(null);
 
     try {
-      const input: GenerateBookRecommendationsInput = {
-        readingHistory: values.readingHistory,
-        preferences: values.preferences,
-      };
-      const result: GenerateBookRecommendationsOutput = await generateBookRecommendations(input);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Use mock recommendations since AI is disabled
+      const result = getMockRecommendations(values.readingHistory, values.preferences);
       setRecommendations(result.recommendations);
+      
       toast({
         title: "Recommendations Generated!",
-        description: "We found some books you might like.",
+        description: "Here are some popular books you might enjoy. (AI recommendations temporarily disabled)",
       });
     } catch (e) {
       console.error("Error generating recommendations:", e);
@@ -68,11 +133,20 @@ export function PersonalizedRecommendationsForm() {
       <CardHeader>
         <div className="flex items-center space-x-2 mb-2">
           <Sparkles className="h-6 w-6 text-primary" />
-          <CardTitle className="font-headline text-2xl">Personalized Recommendations</CardTitle>
+          <CardTitle className="font-headline text-2xl">Book Recommendations</CardTitle>
         </div>
         <CardDescription>
           Tell us about your reading habits, and we'll suggest books you might love!
         </CardDescription>
+        
+        {/* AI Disabled Notice */}
+        <Alert className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Note</AlertTitle>
+          <AlertDescription>
+            AI-powered recommendations are temporarily disabled. You'll receive curated popular book suggestions instead.
+          </AlertDescription>
+        </Alert>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -131,12 +205,23 @@ export function PersonalizedRecommendationsForm() {
             )}
             {recommendations && recommendations.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-2 font-headline">Here are some suggestions:</h3>
-                <ul className="list-disc list-inside space-y-1 bg-secondary/30 p-4 rounded-md">
+                <h3 className="text-lg font-semibold mb-4 font-headline">Here are some suggestions:</h3>
+                <div className="space-y-4">
                   {recommendations.map((rec, index) => (
-                    <li key={index} className="text-sm">{rec}</li>
+                    <div key={index} className="bg-secondary/30 p-4 rounded-md border">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-lg">"{rec.title}"</h4>
+                        <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded">
+                          {rec.matchScore}% match
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-1">by {rec.author}</p>
+                      <p className="text-sm text-primary mb-2">{rec.genre}</p>
+                      <p className="text-sm mb-2">{rec.description}</p>
+                      <p className="text-xs text-muted-foreground italic">{rec.reasoning}</p>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
             {recommendations && recommendations.length === 0 && (

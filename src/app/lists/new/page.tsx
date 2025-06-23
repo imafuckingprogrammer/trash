@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"; // Using shadcn Label
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { ListPlus, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/OptimizedAuthContext";
 import { createList } from "@/lib/services/listService";
 import { useEffect } from "react";
 

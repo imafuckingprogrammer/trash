@@ -10,7 +10,7 @@ import { ThumbsUp, MessageSquare, CornerDownRight, Trash2, Loader2 } from 'lucid
 import { formatDistanceToNow } from 'date-fns';
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/OptimizedAuthContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -160,8 +160,8 @@ export function CommentCard({
                 className="min-h-[50px] text-sm p-1.5"
             />
             <div className="flex justify-end space-x-1.5">
-                <Button type="button" variant="ghost" size="xs" onClick={() => setShowReplyForm(false)} disabled={isSubmittingReply}>Cancel</Button>
-                <Button type="submit" size="xs" disabled={isSubmittingReply || !replyText.trim()}>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setShowReplyForm(false)} disabled={isSubmittingReply}>Cancel</Button>
+                <Button type="submit" size="sm" disabled={isSubmittingReply || !replyText.trim()}>
                     {isSubmittingReply && <Loader2 className="mr-1 h-3 w-3 animate-spin"/>}
                     Post Reply
                 </Button>

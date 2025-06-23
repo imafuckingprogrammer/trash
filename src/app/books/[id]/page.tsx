@@ -20,7 +20,7 @@ import { format } from 'date-fns';
 import { getBookDetails, getBookReviews, getUserBookInteraction, updateUserBookInteraction, likeBook, unlikeBook, addBookReview } from '@/lib/services/bookService';
 import { addBookToList as addBookToListService } from '@/lib/services/listService'; 
 import { getUserLists } from '@/lib/services/userService';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/OptimizedAuthContext';
 import { likeReview as likeReviewService, unlikeReview as unlikeReviewService, deleteReview as deleteReviewService } from '@/lib/services/reviewService';
 
 

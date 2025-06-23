@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/OptimizedAuthContext';
 import { useRouter } from 'next/navigation';
 import { Loader2, BellRing, CheckCheck } from 'lucide-react';
 import type { Notification, PaginatedResponse } from '@/types';

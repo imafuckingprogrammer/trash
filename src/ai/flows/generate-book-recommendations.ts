@@ -9,61 +9,98 @@
  * - GenerateBookRecommendationsOutput - The return type for the generateBookRecommendations function.
  */
 
+// AI flow functionality temporarily disabled to fix module resolution issues
+// TODO: Install genkit dependencies when AI features are needed
+
+/*
+import type { Book, UserProfile } from '@/types';
+
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateBookRecommendationsInputSchema = z.object({
-  readingHistory: z
-    .string()
-    .describe(
-      'A detailed history of the user reading, including titles, authors, genres, and ratings.'
-    ),
-  preferences: z
-    .string()
-    .describe('The user preferences, such as preferred genres, authors, and reading styles.'),
+  readingHistory: z.array(z.object({
+    title: z.string(),
+    author: z.string(),
+    genre: z.string().optional(),
+    rating: z.number().optional(),
+  })),
+  preferences: z.object({
+    favoriteGenres: z.array(z.string()),
+    preferredLength: z.enum(['short', 'medium', 'long']).optional(),
+    excludeGenres: z.array(z.string()).optional(),
+  }),
+  userProfile: z.object({
+    age: z.number().optional(),
+    readingLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  }).optional(),
 });
-export type GenerateBookRecommendationsInput = z.infer<
-  typeof GenerateBookRecommendationsInputSchema
->;
 
 const GenerateBookRecommendationsOutputSchema = z.object({
-  recommendations: z
-    .array(z.string())
-    .describe('A list of book recommendations based on the user reading history and preferences.'),
-});
-export type GenerateBookRecommendationsOutput = z.infer<
-  typeof GenerateBookRecommendationsOutputSchema
->;
-
-export async function generateBookRecommendations(
-  input: GenerateBookRecommendationsInput
-): Promise<GenerateBookRecommendationsOutput> {
-  return generateBookRecommendationsFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateBookRecommendationsPrompt',
-  input: {schema: GenerateBookRecommendationsInputSchema},
-  output: {schema: GenerateBookRecommendationsOutputSchema},
-  prompt: `You are a book recommendation expert.
-
-  Based on the user's reading history and preferences, provide a list of book recommendations that the user might enjoy.
-  Do not include books already present in their reading history.
-
-  Reading History: {{{readingHistory}}}
-  Preferences: {{{preferences}}}
-
-  Return the recommendations as a list of book titles.`,
+  recommendations: z.array(z.object({
+    title: z.string(),
+    author: z.string(),
+    genre: z.string(),
+    description: z.string(),
+    reasoning: z.string(),
+    matchScore: z.number().min(0).max(100),
+  })),
+  totalRecommendations: z.number(),
 });
 
-const generateBookRecommendationsFlow = ai.defineFlow(
+export const generateBookRecommendationsFlow = ai.defineFlow(
   {
-    name: 'generateBookRecommendationsFlow',
+    name: 'generateBookRecommendations',
     inputSchema: GenerateBookRecommendationsInputSchema,
     outputSchema: GenerateBookRecommendationsOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const { readingHistory, preferences, userProfile } = input;
+
+    const prompt = `
+You are a knowledgeable book recommendation expert. Based on the user's reading history and preferences, recommend 5-10 books that they would likely enjoy.
+
+Reading History:
+${readingHistory.map(book => `- "${book.title}" by ${book.author}${book.genre ? ` (${book.genre})` : ''}${book.rating ? ` - Rated: ${book.rating}/5` : ''}`).join('\n')}
+
+Preferences:
+- Favorite Genres: ${preferences.favoriteGenres.join(', ')}
+- Preferred Length: ${preferences.preferredLength || 'Any'}
+- Exclude Genres: ${preferences.excludeGenres?.join(', ') || 'None'}
+
+${userProfile ? `User Profile:
+- Age: ${userProfile.age || 'Not specified'}
+- Reading Level: ${userProfile.readingLevel || 'Not specified'}` : ''}
+
+Please provide recommendations with:
+1. Title and Author
+2. Genre
+3. Brief description (2-3 sentences)
+4. Reasoning for recommendation based on their history/preferences
+5. Match score (0-100) indicating how well it fits their preferences
+
+Format your response as a JSON object with the structure specified.
+`;
+
+    const result = await ai.generate({
+      model: 'googleai/gemini-2.0-flash',
+      prompt,
+      output: {
+        format: 'json',
+        schema: GenerateBookRecommendationsOutputSchema,
+      },
+    });
+
+    return result.output;
   }
 );
+*/
+
+// Placeholder export to prevent import errors
+export const generateBookRecommendationsFlow = {
+  disabled: true,
+  message: 'AI book recommendation flow is currently disabled. Install genkit dependencies to enable.',
+  async execute() {
+    throw new Error('AI functionality is disabled. Please install required dependencies.');
+  }
+};

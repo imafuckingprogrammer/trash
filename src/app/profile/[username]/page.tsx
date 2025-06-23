@@ -15,7 +15,7 @@ import { Edit3, Settings, UserPlus, UserCheck, Loader2, CalendarDays, Eye, Heart
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { StarRating } from '@/components/ui/StarRating';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/OptimizedAuthContext';
 import { 
   getUserProfile, 
   getUserReadBooks, 

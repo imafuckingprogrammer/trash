@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,7 @@ import { ThumbsUp, Share2, MessageCircle, Eye, EyeOff, ArrowDownAZ, ArrowUpAZ, L
 import { formatDistanceToNow } from 'date-fns';
 import { CommentCard } from '@/components/comments/CommentCard';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/OptimizedAuthContext';
 import { getListDetails, getListBooks, updateListDetails, likeList, unlikeList, getListComments, addCommentToList, deleteList as deleteListService, removeBookFromList as removeBookFromListService } from '@/lib/services/listService';
 import { likeComment as likeCommentService, unlikeComment as unlikeCommentService, deleteComment as deleteCommentService } from '@/lib/services/commentService';
 import Link from 'next/link';
@@ -33,11 +34,15 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-export default function ListDetailsPage({ params }: { params: { id:string } }) {
+export default function ListDetailsPage({ params }: { params: Promise<{ id:string }> }) {
   const { toast } = useToast();
   const { userProfile, isAuthenticated } = useAuth();
   const router = useRouter();
-  const listId = params.id;
+  const [listId, setListId] = useState<string>('');
+
+  useEffect(() => {
+    params.then(({ id }) => setListId(id));
+  }, [params]);
 
   const [listData, setListData] = useState<ListCollection | null>(null);
   const [listBooks, setListBooks] = useState<Book[]>([]);
@@ -50,6 +55,7 @@ export default function ListDetailsPage({ params }: { params: { id:string } }) {
   const [isEditingDetails, setIsEditingDetails] = useState(false); // For editing list name/desc
 
   const fetchListAllData = useCallback(async () => {
+    if (!listId) return;
     setIsLoading(true);
     setError(null);
     try {

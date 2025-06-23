@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/OptimizedAuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Loader2, UserCog, ShieldCheck, Palette, BellDot } from 'lucide-react';
@@ -15,7 +15,7 @@ import { updateUserProfile } from '@/lib/services/userService';
 import { changePassword, changeEmail } from '@/lib/services/authService';
 
 export default function SettingsPage() {
-  const { userProfile, authUser, isLoading: authLoading, fetchUserProfile, logout } = useAuth();
+  const { userProfile, authUser, isLoading: authLoading, refreshProfile, logout } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -73,7 +73,7 @@ export default function SettingsPage() {
       });
       
       // Re-fetch user profile to update the context with the new data
-      await fetchUserProfile(userProfile.id);
+      await refreshProfile();
       
       toast({ 
         title: "Profile Updated", 

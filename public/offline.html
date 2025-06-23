@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - LibroVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .offline-container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .retry-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+
+        .retry-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .offline-features {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .offline-features h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .offline-features ul {
+            list-style: none;
+            text-align: left;
+        }
+
+        .offline-features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .offline-features li::before {
+            content: "📚";
+            position: absolute;
+            left: 0;
+        }
+
+        .connection-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .connection-status.offline {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .connection-status.online {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .offline-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            📖
+        </div>
+        
+        <h1>You're Offline</h1>
+        
+        <p>
+            It looks like you've lost your internet connection. Don't worry - some of your 
+            favorite books and reading lists might still be available from your recent activity.
+        </p>
+        
+        <button class="retry-button" onclick="retryConnection()">
+            Try Again
+        </button>
+        
+        <a href="/" class="retry-button">
+            Go to Homepage
+        </a>
+        
+        <div class="offline-features">
+            <h3>What you can still do offline:</h3>
+            <ul>
+                <li>View recently visited book pages</li>
+                <li>Browse cached reading lists</li>
+                <li>Read saved book descriptions</li>
+                <li>Access your reading progress</li>
+            </ul>
+        </div>
+        
+        <div class="connection-status offline" id="connectionStatus">
+            🔴 Currently offline
+        </div>
+    </div>
+
+    <script>
+        // Check connection status
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            
+            if (navigator.onLine) {
+                statusElement.textContent = '🟢 Back online!';
+                statusElement.className = 'connection-status online';
+                
+                // Auto-retry after a short delay when back online
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                statusElement.textContent = '🔴 Currently offline';
+                statusElement.className = 'connection-status offline';
+            }
+        }
+
+        // Retry connection
+        function retryConnection() {
+            if (navigator.onLine) {
+                window.location.reload();
+            } else {
+                // Try to reload anyway in case the browser's online status is incorrect
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Check connection status on load
+        updateConnectionStatus();
+
+        // Periodically check connection (fallback)
+        setInterval(() => {
+            fetch('/favicon.ico', { 
+                method: 'HEAD', 
+                cache: 'no-cache',
+                mode: 'no-cors'
+            })
+            .then(() => {
+                if (!navigator.onLine) {
+                    // Browser thinks we're offline but we can reach the server
+                    window.location.reload();
+                }
+            })
+            .catch(() => {
+                // Still offline
+            });
+        }, 5000);
+
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate the offline icon
+            const icon = document.querySelector('.offline-icon');
+            let rotation = 0;
+            
+            setInterval(() => {
+                rotation += 1;
+                icon.style.transform = `rotate(${rotation}deg)`;
+            }, 100);
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    retryConnection();
+                } else if (e.key === 'h' || e.key === 'H') {
+                    window.location.href = '/';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
